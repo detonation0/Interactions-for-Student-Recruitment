@@ -122,6 +122,34 @@ public class INT_InteractionProcessor {
         set;
     }
 
+    // TODO: NEW STUFF HERE
+    public void filterAndProcessInteractions(List<Interaction__c> newInteractions) {
+        List<Interaction__c> interactionsToProcess = new List<Interaction__c>();
+        List<Interaction__c> interactionsToLeadsOnly = new List<Interaction__c>();
+
+        // Filter the new Interactions by Lead Only vs. those to process normally
+        for (Interaction__c newInteraction : newInteractions) {
+            Interaction__c clonedInteraction = (Interaction__c) newInteraction.clone(true, true, true, true); // Clone because After Trigger context, we need the Id for processing.
+            if (clonedInteraction.Interaction_Status__c == 'New') { // Only process New Interactions
+                clonedInteraction.Audit_Reason__c = ''; // Clear audit reason in case any failed previously and are being re-processed.
+
+                if (clonedInteraction.Lead_Only__c) {
+                    interactionsToLeadsOnly.add(clonedInteraction);
+                } else {
+                    interactionsToProcess.add(clonedInteraction);
+                }
+            }
+        }
+
+        if (interactionsToLeadsOnly.size() > 0) processLeads(interactionsToLeadsOnly);
+        if (interactionsToProcess.size() > 0) processInteractions(interactionsToProcess);
+    }
+
+
+
+
+
+
     /**
      * @description Inserts Leads only from new Interaction__c records.
      * @param interactionsToProcess, the List of new Interaction__c objects to process.
@@ -574,5 +602,11 @@ public class INT_InteractionProcessor {
                 System.debug('Upsert Error: ' + result.getErrors() + ' ' + result.getId());
             }
         }
+    }
+
+    public class InteractionWrapper {
+        public Interaction__c interaction { get; set; }
+        public Id leadId { get; set; }
+        public Id contactId { get; set; }
     }
 }

@@ -7,6 +7,16 @@
 private class INT_InteractionProcessor_TEST {
     @testSetup
     static void setUpTest() {
+        hed__Trigger_Handler__c intHandler = new hed__Trigger_Handler__c(
+            Name = 'Interactions Trigger Handler',
+            hed__Object__c = 'Interaction__c',
+            hed__Class__c = 'INT_InteractionHandler',
+            hed__Active__c = true,
+            hed__Trigger_Action__c = 'AfterInsert;AfterUpdate',
+            hed__Load_Order__c = 1
+        );
+        insert intHandler;
+
         // Create and insert Interaction Mapping Test Data
         List<Interaction_Mapping__c> testMappings = INT_TestDataFactory.createTestMappings();
         insert testMappings;
